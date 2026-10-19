@@ -1,4 +1,15 @@
-import { Column, Entity, PrimaryColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  JoinTable,
+  ManyToMany,
+  OneToMany,
+  OneToOne,
+  PrimaryColumn,
+} from 'typeorm';
+import { Pedidos } from '../../pedidos/entities/pedido.entity';
+import { Repartidores } from '../../repartidores/entities/repartidore.entity';
+import { Restaurante } from '../../restaurantes/entities/restaurante.entity';
 
 @Entity('users')
 export class User {
@@ -20,16 +31,20 @@ export class User {
   @Column({ default: true })
   isActive!: boolean;
 
-  // ===================================================================
-  // RELACIONES — esta entidad es standalone en esta rama (intencional).
-  // No tiene @OneToMany a Order para mantenerla desacoplada:
-  // - Order ya tiene @ManyToOne(() => User) y FK userId, así puedes
-  //   hacer GET /orders?userId=... o GET /orders/user/:userId sin
-  //   necesidad de que User conozca sus órdenes.
-  // - Si quisieras bidireccional, añadirías aquí:
-  //   @OneToMany(() => Order, (order) => order.user)
-  //   orders: Order[];
-  //   Pero genera import circular y acopla módulos; para didáctica
-  //   se deja unidireccional. El diagrama ER muestra 1—N igual.
-  // ===================================================================
+  @OneToOne(() => Repartidores, (repartidor) => repartidor.user)
+  repartidor?: Repartidores;
+
+  @OneToMany(() => Pedidos, (pedido) => pedido.user)
+  pedidos!: Pedidos[];
+
+  @ManyToMany(() => Restaurante, (restaurante) => restaurante.users)
+  @JoinTable({
+    name: 'users_restaurantes',
+    joinColumn: { name: 'userId', referencedColumnName: 'id' },
+    inverseJoinColumn: {
+      name: 'restauranteId',
+      referencedColumnName: 'id',
+    },
+  })
+  restaurantes!: Restaurante[];
 }

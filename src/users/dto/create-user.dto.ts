@@ -1,7 +1,10 @@
-import { Transform } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 import {
+  ArrayUnique,
+  IsArray,
   IsEmail,
   IsInt,
+  IsOptional,
   IsString,
   Length,
   Matches,
@@ -31,4 +34,12 @@ export class CreateUserDto {
   @IsString()
   @Matches(/^\+?[0-9]{7,15}$/) // +? permite el prefijo internacional; [0-9]{7,15} exige entre 7 y 15 dígitos.
   phone!: string;
+
+  @IsOptional()
+  @IsArray()
+  @ArrayUnique()
+  @Type(() => Number)
+  @IsInt({ each: true })
+  @Min(1, { each: true })
+  restauranteIds?: number[];
 }

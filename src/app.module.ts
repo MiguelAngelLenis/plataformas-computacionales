@@ -5,6 +5,9 @@ import { validateEnvironment } from './config/env.validation';
 import { OrdersModule } from './orders/orders.module';
 import { ProductsModule } from './products/products.module';
 import { UsersModule } from './users/users.module';
+import { PedidosModule } from './pedidos/pedidos.module';
+import { RestaurantesModule } from './restaurantes/restaurantes.module';
+import { RepartidoresModule } from './repartidores/repartidores.module';
 
 @Module({
   imports: [
@@ -55,6 +58,9 @@ import { UsersModule } from './users/users.module';
     UsersModule,
     ProductsModule,
     OrdersModule,
+    PedidosModule,
+    RestaurantesModule,
+    RepartidoresModule,
   ],
 })
 export class AppModule {}

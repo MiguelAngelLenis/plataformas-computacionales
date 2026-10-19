@@ -15,10 +15,11 @@ import {
   NotFoundException, // 404 — cuando no existe
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { CreateUserDto } from '../dto/create-user.dto';
 import { UpdateUserDto } from '../dto/update-user.dto';
 import { User } from '../entities/user.entity';
+import { Restaurante } from '../../restaurantes/entities/restaurante.entity';
 
 @Injectable() // Nest puede crear una sola instancia y compartirla
 export class UsersService {
@@ -27,6 +28,8 @@ export class UsersService {
   constructor(
     @InjectRepository(User)
     private readonly usersRepository: Repository<User>,
+    @InjectRepository(Restaurante)
+    private readonly restaurantesRepository: Repository<Restaurante>,
   ) {}
 
   /**
@@ -43,8 +46,11 @@ export class UsersService {
     // ¿Ya hay alguien con ese email?
     await this.ensureEmailIsAvailable(createUserDto.email);
 
-    // create() solo crea el objeto en memoria, no guarda aún
-    const user = this.usersRepository.create(createUserDto);
+    const { restauranteIds, ...userFields } = createUserDto;
+    const user = this.usersRepository.create(userFields);
+    if (restauranteIds !== undefined) {
+      user.restaurantes = await this.findRestaurantes(restauranteIds);
+    }
 
     // save() sí lo guarda en la BD (INSERT)
     return this.usersRepository.save(user);
@@ -56,7 +62,10 @@ export class UsersService {
    * Por eso filtramos isActive=true
    */
   findAll(): Promise<User[]> {
-    return this.usersRepository.findBy({ isActive: true });
+    return this.usersRepository.find({
+      where: { isActive: true },
+      relations: { restaurantes: true, repartidor: true, pedidos: true },
+    });
   }
 
   /**
@@ -65,7 +74,10 @@ export class UsersService {
    * Este método lo reusa update() y remove() para no repetir código
    */
   async findOne(id: string): Promise<User> {
-    const user = await this.usersRepository.findOneBy({ id, isActive: true });
+    const user = await this.usersRepository.findOne({
+      where: { id, isActive: true },
+      relations: { restaurantes: true, repartidor: true, pedidos: true },
+    });
     if (!user) {
       // Nest convierte esto en respuesta HTTP 404 automáticamente
       throw new NotFoundException(`El usuario con el id: ${id} no existe`);
@@ -88,8 +100,11 @@ export class UsersService {
       await this.ensureEmailIsAvailable(updateUserDto.email);
     }
 
-    // Copia los campos que vienen en el body sobre el usuario encontrado
-    Object.assign(user, updateUserDto);
+    const { restauranteIds, ...userFields } = updateUserDto;
+    Object.assign(user, userFields);
+    if (restauranteIds !== undefined) {
+      user.restaurantes = await this.findRestaurantes(restauranteIds);
+    }
 
     return this.usersRepository.save(user);
   }
@@ -133,5 +148,15 @@ export class UsersService {
         'Ya existe un usuario con este número de identificación',
       );
     }
+  }
+
+  private async findRestaurantes(ids: number[]): Promise<Restaurante[]> {
+    const restaurantes = await this.restaurantesRepository.findBy({
+      id: In(ids),
+    });
+    if (restaurantes.length !== ids.length) {
+      throw new NotFoundException('Uno o más restaurantes no existen');
+    }
+    return restaurantes;
   }
 }
