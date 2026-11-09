@@ -58,6 +58,15 @@ export const apiClient = {
     if (!res.ok) throw new ApiError(res.status, await res.json().catch(() => ({ message: res.statusText })));
     return res.json();
   },
+  async patch<T>(path: string, data: unknown): Promise<T> {
+    const res = await fetch(buildUrl(path), {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+    });
+    if (!res.ok) throw new ApiError(res.status, await res.json().catch(() => ({ message: res.statusText })));
+    return res.json();
+  },
   async delete<T>(path: string): Promise<T> {
     const res = await fetch(buildUrl(path), { method: "DELETE" });
     if (!res.ok) throw new ApiError(res.status, await res.json().catch(() => ({ message: res.statusText })));

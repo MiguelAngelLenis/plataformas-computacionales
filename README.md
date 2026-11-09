@@ -14,19 +14,25 @@ Seed Next.js 16 App Router + TypeScript + Tailwind, espejo del `backend-nestjs-s
 
 ```
 src/app/
-  layout.tsx              # header glass + nav Users/Products/Orders
+  layout.tsx              # header glass + navegación a los módulos
   page.tsx                # home con links y API_URL
   users/page.tsx          # estado y acciones del módulo Users
   users/[id]/page.tsx     # detalle dinámico de un usuario
   products/page.tsx       # estado y acciones del módulo Products
   products/[id]/page.tsx  # detalle dinámico de un producto
-  orders/page.tsx         # estado y acciones del módulo Orders
-  orders/[id]/page.tsx    # detalle dinámico de una orden
+  orders/page.tsx         # órdenes de tienda
+  orders/[id]/page.tsx    # detalle dinámico de una orden de tienda
+  restaurantes/           # CRUD de restaurantes y detalle por ID
+  repartidores/           # CRUD de repartidores y detalle por ID
+  pedidos/                # CRUD de pedidos relacionados y detalle por ID
 src/components/
   ui/                     # piezas visuales reutilizables: tarjetas, estados y controles
   users/                  # UserCard y UserCreateForm
   products/               # ProductCard, ProductCreateForm y ProductFilters
   orders/                 # OrderCard, OrderCreateForm y OrderFilters
+  restaurantes/           # formulario de restaurantes
+  repartidores/           # formulario de repartidores
+  pedidos/                # formulario de pedidos con relaciones
 src/hooks/
   useEntityDetail.ts      # carga reutilizable de una entidad por ID
 src/lib/api.ts            # fetch wrappers con API_URL + params
@@ -138,8 +144,11 @@ Asegúrate de tener el backend corriendo en `NEXT_PUBLIC_API_URL`.
 - `/users/[id]` — consultar el detalle de un usuario
 - `/products` — crear/listar/filtrar por nombre/precio/stock
 - `/products/[id]` — consultar el detalle de un producto
-- `/orders` — crear orden (elige user/product), listar, filtrar por status/userId, cambiar a PAID/cancelar
+- `/orders` — órdenes de tienda (elige cliente/producto), filtros y acciones de pago/cancelación
 - `/orders/[id]` — consultar una orden y navegar a su cliente o productos
+- `/restaurantes` y `/restaurantes/[id]` — crear, consultar, editar y eliminar restaurantes
+- `/repartidores` y `/repartidores/[id]` — crear, consultar, editar y desactivar repartidores
+- `/pedidos` y `/pedidos/[id]` — CRUD de pedidos relacionados con cliente, repartidor y restaurante
 
 Todo usa `src/lib/api.ts` con `fetch` y `cache: no-store`.
 
